@@ -1,0 +1,1 @@
+# raritynetwork-screenshot-util
