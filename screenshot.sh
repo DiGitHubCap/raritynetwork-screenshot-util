@@ -15,7 +15,7 @@ BPG_Quality='25'	## Set quantizer parameter (Smaller gives better quality, Range
 BPG_Bitdepth='8'	## Set the bit depth (8 to 12, default = 8)
 BPG_Colorspace='ycbcr'	## Set the preferred color space (ycbcr, rgb, ycgco, ycbcr_bt709, ycbcr_bt2020, default=ycbcr)
 BPG_Chroma='444'	## Set the preferred chroma format (420, 422, 444, default=444)
-BPG_Effort='9'		## Select the compression level (1=fast, 9=slow, default = 9) Plese don't change this 9 may be slower but it makes smaller file sizes 
+BPG_Effort='9'		## Select the compression level (1=fast, 9=slow, default = 9) Plese don't change this 9 may be slower but it makes smaller file sizes
 BPG_Anim_Q='medium'	## Set the quantizer parameter for animation (options are: high, medium, low)
 
 # FLIF Vars
@@ -67,8 +67,8 @@ name=$(cat ~/.config/screenshot/sc.uid)'.'$(date +%s)
 
 ## Functions
 
-function helpme { 
-	echo "help not ready yet!" 
+function helpme {
+	echo "help not ready yet!"
 }
 
 function upload {
@@ -85,8 +85,8 @@ function upload {
 	rm /tmp/$1
 }
 
-function tkss {	
-	maim -s -b 2 -c 1,0.2,1,0.8 /tmp/screenshot.png 
+function tkss {
+	maim -s -b 2 -c 1,0.2,1,0.8 /tmp/screenshot.png
 }
 
 function BPGenc {
@@ -129,7 +129,6 @@ then
 	killanim
 	animBPGenc
 	upload $name.bpg
-	
 elif [[ $Lossless -eq 1 ]]
 then
 	if [[ $_Encoder == 'bpg' ]]
@@ -145,7 +144,6 @@ then
 	else
 		echo 'Unkown encoder specified!'
 	fi
-
 elif [[ $Animation -eq 1 ]]
 then
 	capanim
