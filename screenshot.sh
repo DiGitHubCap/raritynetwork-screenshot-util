@@ -5,7 +5,7 @@
 # Set which encoder to use (options are: bpg or flif, default = bpg). FLIF is
 # not ready yet. FLIF support will be coming soon! (and maybe WebP if I'm
 # feeling bold)
-Encoder='bpg'
+_Encoder="bpg"
 
 # Set the frame rate at which to capture (Range: whatever your system can
 # handle, default = 16 because most systems suck). Be careful with this one.
