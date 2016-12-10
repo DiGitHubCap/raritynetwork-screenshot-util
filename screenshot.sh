@@ -107,9 +107,7 @@ function helpme {
 }
 
 function upload {
-  url=$(curl -i -X POST -H "Content-Type: multipart/form-data" -F "uid=$uid" \
-             -F "file=@/tmp/$1" https://utils.rarity.network/upload.php \
-            | grep url=)
+	url=$(curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@/tmp/$1" https://utils.rarity.network/upload.php | grep url=)
   url=$(echo -n ${url:4})
   echo -n $url | xsel -ib
   if [[ $_Encoder == "bpg" ]]
