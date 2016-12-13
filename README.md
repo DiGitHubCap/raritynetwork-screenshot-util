@@ -1,6 +1,6 @@
-## screenshot utility for [IMG.Rarity.Network](https://img.rarity.network)
+## screenshot utility for [Util.Rarity.Network](https://util.rarity.network)
 
-This utility is straight forward. It allows you to take a screenshot using either FLIF or BPG and upload it to [IMG.Rarity.Network](https://img.rarity.network).
+This utility is straight forward. It allows you to take a screenshot using either FLIF or BPG and upload it to [Util.Rarity.Network](https://util.rarity.network).
 
 ### Dependencies
 
