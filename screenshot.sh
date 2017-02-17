@@ -1,27 +1,25 @@
 #!/bin/bash
 
-## Variables
+##  Variables  ##
 
-# Set which encoder to use (options are: bpg or flif, default = bpg). FLIF is
-# not ready yet. FLIF support will be coming soon! (and maybe WebP if I'm
-# feeling bold)
-_Encoder="bpg"
+# Set the default encoder to use (options are: bpg or flif, default = bpg).
+Encoder="bpg"
 
-# Set the frame rate at which to capture (Range: whatever your system can
-# handle, default = 16 because most systems suck). Be careful with this one.
+# Set the default frame rate at which to capture (Range: whatever your system
+# can handle, default = 16 because most systems suck). Be careful with this one.
 # Setting it too high will use a lot of I/O and CPU.
 Anim_FPS="16"
 
-# TODO: Document this
+# Flag variable used to start video capture.
 Animation=0
 
-# TODO: Document this
+# Flag variable used to trigger lossless capture.
 Lossless=0
 
-# TODO: Document this
+# Flag variable used to trigger help output.
 hflag=0
 
-# TODO: Document this
+# Flag variable used to stop video capture.
 kflag=0
 
 # TODO: Document this
@@ -59,7 +57,7 @@ BPG_Anim_Q='medium'
 
 while getopts 'e:r:alhkq:b:s:c:f:n:u:' flag; do
   case "${flag}" in
-    e) _Encoder="${OPTARG}" ;;
+    e) Encoder="${OPTARG}" ;;
     r) Anim_FPS="${OPTARG}" ;;
     a) Animation=1 ;;
     l) Lossless=1 ;;
@@ -80,7 +78,7 @@ then
   if [[ $BPG_Anim_Q == 'medium' ]]
   then
     BPG_Quality='29'
-    BPG_Chroma='420'
+    BPG_Chroma='422'
   elif [[ $BPG_Anim_Q == 'high' ]]
   then
     BPG_Quality='20'
@@ -107,13 +105,14 @@ function helpme {
 }
 
 function upload {
-	url=$(curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@/tmp/$1" https://utils.rarity.network/upload.php | grep url=)
+	 url=$(curl -i -X POST -H "Content-Type: multipart/form-data" \
+   -F "file=@/tmp/$1" https://utils.rarity.network/upload.php | grep url=)
   url=$(echo -n ${url:4})
   echo -n $url | xsel -ib
-  if [[ $_Encoder == "bpg" ]]
+  if [[ $Encoder == "bpg" ]]
   then
     bpgview /tmp/$1
-  elif [[ $_Encoder == "flif" ]]
+  elif [[ $Encoder == "flif" ]]
   then
     viewflif /tmp/$1
   fi
@@ -170,12 +169,12 @@ then
   upload $name.bpg
 elif [[ $Lossless -eq 1 ]]
 then
-  if [[ $_Encoder == 'bpg' ]]
+  if [[ $Encoder == 'bpg' ]]
   then
     tkss
     BPGenc 1
     upload $name.bpg
-  elif [[ $_Encoder == 'flif' ]]
+  elif [[ $Encoder == 'flif' ]]
   then
     tkss
     FLIFenc
@@ -187,12 +186,12 @@ elif [[ $Animation -eq 1 ]]
 then
   capanim
 else
-  if [[ $_Encoder == 'bpg' ]]
+  if [[ $Encoder == 'bpg' ]]
   then
     tkss
     BPGenc
     upload $name.bpg
-  elif [[ $_Encoder == 'flif' ]]
+  elif [[ $Encoder == 'flif' ]]
   then
     tkss
     FLIFenc
