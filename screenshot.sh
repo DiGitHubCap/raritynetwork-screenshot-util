@@ -22,10 +22,10 @@ hflag=0
 # Flag variable used to stop video capture.
 kflag=0
 
-# TODO: Document this
+# Flag variable used to trigger uid input.
 set_uid=0
 
-# TODO: Document this
+# Flag variable used to contain the uid value.
 uid=0
 
 ## BPG Variables
@@ -92,11 +92,16 @@ fi
 
 if [[ $set_uid -eq 1 ]]
 then
-  mkdir ~/.config/screenshot/
+  mkdir -p ~/.config/screenshot/
   echo $uid > ~/.config/screenshot/sc.uid
 fi
 
-name=$(cat ~/.config/screenshot/sc.uid)'.'$(date +%s)
+if [[ ! -f ~/.config/screenshot/sc.uid ]]; then
+    echo "WARNING: UID is not set. Use -u to set UID."
+    name=$(date +%s)
+else
+    name=$(cat ~/.config/screenshot/sc.uid)'.'$(date +%s)
+fi
 
 ## Functions
 
