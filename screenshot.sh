@@ -164,40 +164,32 @@ function killanim {
 
 ## The Checks
 
-if [[ $hflag -eq 1 ]]
-then
+if [[ $hflag -eq 1 ]]; then
   helpme
-elif [[ $kflag -eq 1 ]]
-then
+elif [[ $kflag -eq 1 ]]; then
   killanim
   animBPGenc
   upload $name.bpg
-elif [[ $Lossless -eq 1 ]]
-then
-  if [[ $Encoder == 'bpg' ]]
-  then
+elif [[ $Lossless -eq 1 ]]; then
+  if [[ $Encoder == 'bpg' ]]; then
     tkss
     BPGenc 1
     upload $name.bpg
-  elif [[ $Encoder == 'flif' ]]
-  then
+  elif [[ $Encoder == 'flif' ]]; then
     tkss
     FLIFenc
     upload $name.flif
   else
     echo 'Unkown encoder specified!'
   fi
-elif [[ $Animation -eq 1 ]]
-then
+elif [[ $Animation -eq 1 ]]; then
   capanim
 else
-  if [[ $Encoder == 'bpg' ]]
-  then
+  if [[ $Encoder == 'bpg' ]]; then
     tkss
     BPGenc
     upload $name.bpg
-  elif [[ $Encoder == 'flif' ]]
-  then
+  elif [[ $Encoder == 'flif' ]]; then
     tkss
     FLIFenc
     upload $name.flif
