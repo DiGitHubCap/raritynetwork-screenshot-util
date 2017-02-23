@@ -1,2 +1,4 @@
 #!/bin/sh
-sudo cp ./screenshot.sh /usr/bin/screenshot
+sed '2,${/#/d;/^$/d}' ./screenshot.sh > ./screenshot
+chmod +x ./screenshot
+sudo mv ./screenshot /usr/bin/screenshot
