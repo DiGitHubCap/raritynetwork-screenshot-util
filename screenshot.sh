@@ -15,6 +15,8 @@ Encoder="bpg"
 # Setting it too high will use a lot of I/O and CPU.
 Anim_FPS="16"
 
+## ----------------------------- Flag Variables ----------------------------- ##
+
 # Flag variable used to start video capture.
 Animation=0
 
@@ -80,6 +82,8 @@ while getopts "e:r:alhkpq:b:s:c:f:n:u:" flag; do
     esac
 done
 
+
+## -------------------------- Pre-Function Setup  --------------------------- ##
 # Change quality settings if taking animation
 if [[ $Animation -eq 1 ]]; then
     if [[ $BPG_Anim_Q == "medium" ]]; then
