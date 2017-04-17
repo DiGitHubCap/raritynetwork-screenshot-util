@@ -1,14 +1,12 @@
 #!/bin/bash
+set -e
 
 ## -------------------------------------------------------------------------- ##
 ## -------------------------------- Variables ------------------------------- ##
 ## -------------------------------------------------------------------------- ##
 
-# Set your default image viewing program here. eg.(feh, eog, mirage, gpicvew)
-defviewer=eog
-
-# Set the default encoder to use (options are: bpg or flif, default = bpg).
-Encoder="bpg"
+# Default encoder. (Set with installer script)
+Encoder=__ENCODER__
 
 # Set the default frame rate at which to capture (Range: whatever your system
 # can handle, default = 16 because most systems suck). Be careful with this one.
@@ -58,8 +56,8 @@ BPG_Chroma="444"
 # change this. 9 may be slower but it makes smaller file sizes.
 BPG_Effort="9"
 
-# Set the quantizer parameter for animation (options are: high, medium, low)
-BPG_Anim_Q="medium"
+# Set the quantizer parameter for animation (options are: high, med, low)
+BPG_Anim_Q="med"
 
 ## ---------------------------------- Flags --------------------------------- ##
 # Setting variables with flags
@@ -86,7 +84,7 @@ done
 ## -------------------------- Pre-Function Setup  --------------------------- ##
 # Change quality settings if taking animation
 if [[ $Animation -eq 1 ]]; then
-    if [[ $BPG_Anim_Q == "medium" ]]; then
+    if [[ $BPG_Anim_Q == "med" ]]; then
         BPG_Quality="29"
         BPG_Chroma="422"
     elif [[ $BPG_Anim_Q == "high" ]]; then
@@ -98,17 +96,11 @@ if [[ $Animation -eq 1 ]]; then
     fi
 fi
 
-# Write the UID to file
-if [[ $set_uid -eq 1 ]]; then
-    mkdir -p ~/.config/screenshot/
-    echo $uid > ~/.config/screenshot/sc.uid
-fi
-
 # Get UID from file and make the name
-if [[ ! -f ~/.config/screenshot/sc.uid ]]; then
+if [[ ! -f ~/.config/__PROGNAME__/sc.uid ]]; then
     echo "WARNING: UID is not set. Use -u to set UID."
     name="/tmp/0."$(date +%s)
-else name="/tmp/"$(cat ~/.config/screenshot/sc.uid)"."$(date +%s); fi
+else name="/tmp/"$(cat ~/.config/__PROGNAME__/sc.uid)"."$(date +%s); fi
 
 # Add the extension to the name
 if [[ $Encoder == "bpg" ]]; then name=$name".bpg"
@@ -120,20 +112,57 @@ elif [[ $Encoder == "flif" ]]; then name=$name".flif"; fi
 
 # Output help info
 function helpme {
-    echo "help not ready yet! ;p"
+    echo -e "\n    Rarity Network Screenshot Util v1.0.0\n
+Usage:             __PROGNAME__ [OPTIONS]\n
+Description:       This is a command-line tool that takes a screenshot using
+                   either FLIF or BPG and uploads it to Utils.Rarity.Network
+Options:
+  -h               Show this help message and exit
+  -e bpg|flif      Sets the encoder to be used (Default: $Encoder)
+  -u \`uid\`         Sets the uid and exits
+  -p               Disable previewing
+  -q 0-51          Quantizer parameter for bpg encoding (Default: $BPG_Quality)
+  -b 8|10|12       Set the bit depth (Default: $BPG_Bitdepth)\n
+  -s \`...\`         Set the color space for the bpg encoder (Default: \
+$BPG_Colorspace)
+                   (Options: ycbcr|rgb|ycgco|ycbcr_bt709|ycbcr_bt2020)\n
+  -c 420|422|444   Set the chroma format for the bpg encoder (Default: \
+$BPG_Chroma)
+  -f 1-9           The effort to use when encoding with bpg (Default: \
+$BPG_Effort)
+  -l               Do a lossless encode
+  -a               Start a video capture
+  -k               Stop a video capture and start upload
+  -r \`fps\`         Set the fps to capture video at (Default: $Anim_FPS)
+  -n high|med|low  Quantizer parameter for bpg animation (Default: $BPG_Anim_Q)\n
+Examples:
+  __PROGNAME__
+  __PROGNAME__ -pl -e bpg
+  __PROGNAME__ -e flif
+  __PROGNAME__ -a -r 20
+  Same fps as when -a has to be specifide when -k is used
+  __PROGNAME__ -k -r 20 -n high -e bpg
+"
+}
+
+# Write the UID to file
+function setuid {
+    mkdir -p ~/.config/__PROGNAME__/
+    echo $uid > ~/.config/__PROGNAME__/sc.uid
+    echo "Successfully set UID to '"$uid"'"
 }
 
 # Upload the final image to Rarity Network and preview it
 function upload {
     # Upload it and save output from curl
-    url=$(curl -i -X POST -H "Content-Type: multipart/form-data" \
+    local url=$(curl -i -X POST -H "Content-Type: multipart/form-data" \
            -F "file=@$name" https://utils.rarity.network/upload.php | grep url=)
 
     # Get image URL from output and add it to clipboard
     url=$(echo -n ${url:4}); echo -n $url | xsel -ib
 
     # Preview Check
-    if [[ $pflag -eq 0 ]]; then $($defviewer /tmp/screenshot.png); fi
+    if [[ $pflag -eq 0 ]]; then $(__DEFAULTVIEWER__ /tmp/screenshot.png); fi
 
     # When previewing completes delete files
     rm /tmp/screenshot.png $name
@@ -187,6 +216,8 @@ function killanim {
 
 if [[ $hflag -eq 1 ]]; then
     helpme
+elif [[ $set_uid -eq 1 ]]; then
+    setuid
 elif [[ $kflag -eq 1 ]]; then
     killanim
     animBPGenc
@@ -201,7 +232,7 @@ elif [[ $Lossless -eq 1 ]]; then
         FLIFenc
         upload
     else
-        echo "ERROR: Unkown encoder specified!"; exit 1
+        echo "ERROR: Unkown encoder specified! (Use -h for help)"; exit 1
     fi
 elif [[ $Animation -eq 1 ]]; then
     capanim
@@ -215,6 +246,6 @@ else
         FLIFenc
         upload
     else
-        echo "ERROR: Unkown encoder specified!"; exit 1
+        echo "ERROR: Unkown encoder specified! (Use -h for help)"; exit 1
     fi
 fi
