@@ -3,6 +3,17 @@ set -e
 
 echo -e "\n *** Screenshot Installer ***\n"
 
+echo -e "Checking Dependencies..."
+command -v curl >/dev/null 2>&1 && echo "Found: curl" || { echo >&2 "ERROR: Missing Dependency 'curl'. Aborting!"; exit 1; }
+command -v xsel >/dev/null 2>&1 && echo "Found: xsel" || { echo >&2 "ERROR: Missing Dependency 'xsel'. Aborting!"; exit 1; }
+command -v maim >/dev/null 2>&1 && echo "Found: maim" || { echo >&2 "ERROR: Missing Dependency 'maim'. Aborting!"; exit 1; }
+command -v slop >/dev/null 2>&1 && echo "Found: slop" || { echo >&2 "ERROR: Missing Dependency 'slop'. Aborting!"; exit 1; }
+command -v zopflipng >/dev/null 2>&1 && echo "Found: zopflipng" || { echo >&2 "ERROR: Missing Dependency 'zopflipng'. Aborting!"; exit 1; }
+command -v /opt/mozjpeg/bin/cjpeg >/dev/null 2>&1 && echo "Found: mozjpeg" || { echo >&2 "ERROR: Missing Dependency 'cjpeg'. Make sure it's in '/opt/mozjpeg/bin/'. Aborting!"; exit 1; }
+command -v ffmpeg >/dev/null 2>&1 && echo "Found: ffmpeg" || { echo >&2 "WARNING: Missing Optional Dependency 'ffmpeg'."; }
+
+echo ""
+
 read -p "Name: [Leave empty for 'screenshot'] " name
 if [[ $name == "" ]]; then name="screenshot"; fi
 echo -e "Installing As:\n\n"$name"\n"
@@ -11,8 +22,8 @@ read -p "Image Viewer for Preview: [Leave empty for 'eog'] " defviewer
 if [[ $defviewer == "" ]]; then defviewer=eog; fi
 echo -e "Using:\n\n"$defviewer"\n"
 
-read -p "Default Encoder ('flif' or 'bpg'): [Leave empty for 'bpg'] " encoder
-if [[ $encoder == "" ]]; then encoder="bpg"; fi
+read -p "Default Encoder (png or jpeg): [Leave empty for 'jpeg'] " encoder
+if [[ $encoder == "" ]]; then encoder="jpeg"; fi
 echo -e "Using:\n\n"$encoder"\n"
 
 read -p ":: Proceed with installation? [Y/n] " yn
