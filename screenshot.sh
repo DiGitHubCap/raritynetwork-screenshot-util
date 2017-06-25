@@ -83,7 +83,7 @@ name=$name$ext
 
 # Output help info
 function helpme {
-    echo -e "\n    Rarity Network Screenshot Util v2.1.0\n
+    echo -e "\n    Rarity Network Screenshot Util v2.1.1\n
 Usage:             __PROGNAME__ [OPTIONS]\n
 Description:       This is a command-line tool that takes a screenshot using
                    either PNG/APNG or JPG and uploads it to Utils.Rarity.Network
@@ -95,9 +95,9 @@ Options:
   -d               Return direct link. Off by default
   -c               Turns on heavy compression for PNG. Off by default
   -q 1-100         Quality parameter for JPEG encoding (Default: $quality)
-  -l               Do a lossless encode
+  -l               Do a lossless encode. Same as -q 100
   -a               Start a video capture
-  -k               Stop a video capture and start upload
+  -k               Stop the video capture and start upload
   -r 'fps'         Set the fps to capture video at (Default: $Anim_FPS)
 Examples:
   __PROGNAME__ -e png -cd
@@ -132,7 +132,7 @@ function upload {
     # Preview Check
     if [[ $pflag -eq 0 ]]; then $(__DEFAULTVIEWER__ $name); fi
 
-    # When previewing completes delete files
+    # When done previewing delete files
     rm $name
 }
 
@@ -160,7 +160,7 @@ function JPGenc {
 
 # Capture the animation with ffmpeg
 function capanim {
-    eval $(slop -c 1,0.2,1,0.8 -b 2 -n)
+    read -r X Y W H < <(slop -c 1,0.2,1,0.8 -b 2 -f "%x %y %w %h"; echo "")
     ffmpeg -r $Anim_FPS -f x11grab -s "$W"x"$H" -i "$DISPLAY".0+$X,$Y \
            -pix_fmt rgb24 -plays 0 /tmp/screenshot.apng & \
         echo $! >> /tmp/ssffmpeg.pid
@@ -170,6 +170,7 @@ function capanim {
 function killanim {
     kill -s TERM $(cat /tmp/ssffmpeg.pid)
     rm /tmp/ssffmpeg.pid
+    sleep 0.25s
     mv /tmp/screenshot.apng $name
 }
 
