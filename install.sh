@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
-
-echo -e "\n *** Screenshot Installer ***\n"
-
-echo -e "Checking Dependencies..."
+echo -e "\n *** Screenshot Installer ***\n\nChecking Dependencies..."
 command -v curl >/dev/null 2>&1 && echo "Found: curl" || { echo >&2 "ERROR: Missing Dependency 'curl'. Aborting!"; exit 1; }
 command -v xsel >/dev/null 2>&1 && echo "Found: xsel" || { echo >&2 "ERROR: Missing Dependency 'xsel'. Aborting!"; exit 1; }
 command -v maim >/dev/null 2>&1 && echo "Found: maim" || { echo >&2 "ERROR: Missing Dependency 'maim'. Aborting!"; exit 1; }
@@ -13,7 +10,6 @@ command -v /opt/mozjpeg/bin/cjpeg >/dev/null 2>&1 && echo "Found: mozjpeg" || { 
 command -v ffmpeg >/dev/null 2>&1 && echo "Found: ffmpeg" || { echo >&2 "WARNING: Missing Optional Dependency 'ffmpeg'."; }
 
 echo ""
-
 read -p "Name: [Leave empty for 'screenshot'] " name
 if [[ $name == "" ]]; then name="screenshot"; fi
 echo -e "Installing As:\n\n"$name"\n"
