@@ -8,58 +8,47 @@ set -e
 # Default encoder. (Set with installer script)
 Encoder=__ENCODER__
 
-# Extension variable
-ext=""
-
 # Set the default frame rate at which to capture (Range: whatever your system
-# can handle, default = 16 because most systems suck). Be careful with this one.
-# Setting it too high will use a lot of I/O and CPU.
+# can handle, default = 16 because most systems suck).
 Anim_FPS="16"
 
 # Flag variable used to start video capture.
 Animation=0
 
-# Flag variable used to stop video capture.
-kflag=0
-
-# Flag variable used to trigger lossless capture.
-Lossless=0
-
 # Flag variable used to trigger help output.
 hflag=0
 
 # Flag variable used to disable preview after upload.
-pflag=0
+nflag=0
 
 # Flag variable used to toggle direct link.
 dflag=0
 
 # Flag variable used to toggle heavy compression for PNGs.
-cflag=0
+cflag=1
+
+# Flag variable used to toggle optimal mode.
+oflag=0
 
 # Flag variable used to trigger uid input.
 set_uid=0
-
-# Flag variable used to contain the uid value.
-uid=0
 
 # Quality to use for JPEG encoding
 quality=95
 
 ## ---------------------------------- Flags --------------------------------- ##
 # Setting variables with flags
-while getopts "alhkpdcu:q:r:e:" flag; do
+while getopts "ahndcou:q:f:e:" flag; do
     case "${flag}" in
         a) Animation=1 ;;
-        l) Lossless=1 ;;
         h) hflag=1 ;;
-        k) kflag=1 ;;
-        p) pflag=1 ;;
+        n) nflag=1 ;;
         d) dflag=1 ;;
-        c) cflag=1 ;;
+        c) cflag=0 ;;
+        o) oflag=1 ;;
         u) uid="${OPTARG}" set_uid=1 ;;
         q) quality="${OPTARG}" ;;
-        r) Anim_FPS="${OPTARG}" ;;
+        f) Anim_FPS="${OPTARG}" ;;
         e) Encoder="${OPTARG}" ;;
     esac
 done
@@ -71,11 +60,8 @@ if [[ ! -f ~/.config/__PROGNAME__/sc.uid ]]; then
     name="/tmp/0."$(date +%s)
 else name="/tmp/"$(cat ~/.config/__PROGNAME__/sc.uid)"."$(date +%s); fi
 
-# Add the extension to the name
-if [[ $kflag -eq 1 ]]; then ext=".apng"
-elif [[ $Encoder == "png" ]]; then ext=".png"
-elif [[ $Encoder == "jpeg" ]]; then ext=".jpg"; fi
-name=$name$ext
+# Select which PNG compression to use
+if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
 
 ## -------------------------------------------------------------------------- ##
 ## -------------------------------- Functions ------------------------------- ##
@@ -83,7 +69,7 @@ name=$name$ext
 
 # Output help info
 function helpme {
-    echo -e "\n    Rarity Network Screenshot Util v2.1.1\n
+    echo -e "\n    Rarity Network Screenshot Util v2.3.1\n
 Usage:             __PROGNAME__ [OPTIONS]\n
 Description:       This is a command-line tool that takes a screenshot using
                    either PNG/APNG or JPG and uploads it to Utils.Rarity.Network
@@ -91,21 +77,18 @@ Options:
   -h               Show this help message and exit
   -e png|jpeg      Sets the encoder to be used (Default: $Encoder)
   -u 'uid'         Sets the uid and exits
-  -p               Disable previewing. Off by default
-  -d               Return direct link. Off by default
-  -c               Turns on heavy compression for PNG. Off by default
-  -q 1-100         Quality parameter for JPEG encoding (Default: $quality)
-  -l               Do a lossless encode. Same as -q 100
-  -a               Start a video capture
-  -k               Stop the video capture and start upload
-  -r 'fps'         Set the fps to capture video at (Default: $Anim_FPS)
+  -n               No previewing
+  -d               Return direct link
+  -c               Turns off PNG crushing
+  -o               Turns on auto selecting the best encoder for smallest file
+  -q 1-100         Quality parameter for JPEG encoding (Default: 95)
+  -a               Start and stop APNG capture
+  -f 'fps'         Set the fps to capture APNGs at (Default: 16)
 Examples:
-  __PROGNAME__ -e png -cd
-  __PROGNAME__ -pl -e jpeg
-  __PROGNAME__ -e png
-  __PROGNAME__ -a -r 20
-  Same fps as when -a has to be specifide when -k is used
-  __PROGNAME__ -k -r 20
+  __PROGNAME__
+  __PROGNAME__ -n -e jpeg
+  __PROGNAME__ -od
+  __PROGNAME__ -a -f 20
 "
 }
 
@@ -114,6 +97,14 @@ function setuid {
     mkdir -p ~/.config/__PROGNAME__/
     echo $uid > ~/.config/__PROGNAME__/sc.uid
     echo "Successfully set UID to '"$uid"'"
+}
+
+# Set the extension variable and name
+function setEXT {
+    if [[ $1 -eq 1 ]]; then x=".png"
+    elif [[ $1 -eq 2 ]]; then x=".jpg"
+    elif [[ $1 -eq 3 ]]; then x=".apng"; fi
+    ext=$x; name=$name$ext;
 }
 
 # Upload the final image to Rarity Network and preview it
@@ -130,7 +121,7 @@ function upload {
     echo -n $url | xsel -ib
 
     # Preview Check
-    if [[ $pflag -eq 0 ]]; then $(__DEFAULTVIEWER__ $name); fi
+    if [[ $nflag -eq 0 ]]; then $(__DEFAULTVIEWER__ $name); fi
 
     # When done previewing delete files
     rm $name
@@ -144,34 +135,50 @@ function tkss {
 
 # Compress the PNG screenshot with zopflipng
 function PNGenc {
-    if [[ $cflag -eq 1 ]]; then filter=0e; else filter=12; fi
-    zopflipng -q -y --filters=$filter --iterations=0 --lossy_8bit \
+    setEXT 1
+    zopflipng -q -y --filters=$PNGfilter --iterations=0 --lossy_8bit \
               --lossy_transparent  /tmp/screenshot.png $name
     rm /tmp/screenshot.png
 }
 
 # Compress the PNG screenshot with mozjpeg
 function JPGenc {
-    if [[ $Lossless -eq 1 ]]; then quality=100; fi
+    setEXT 2
     /opt/mozjpeg/bin/cjpeg -quality $quality -dct float -quant-table 4 \
                            -outfile $name /tmp/screenshot.png
     rm /tmp/screenshot.png
 }
 
-# Capture the animation with ffmpeg
-function capanim {
-    read -r X Y W H < <(slop -c 1,0.2,1,0.8 -b 2 -f "%x %y %w %h"; echo "")
-    ffmpeg -r $Anim_FPS -f x11grab -s "$W"x"$H" -i "$DISPLAY".0+$X,$Y \
-           -pix_fmt rgb24 -plays 0 /tmp/screenshot.apng & \
-        echo $! >> /tmp/ssffmpeg.pid
+# Try both encoders and use the smallest file produced
+function OPTIencode {
+    tfo=/tmp/out
+    zopflipng -q -y --filters=$PNGfilter --iterations=0 --lossy_8bit \
+              --lossy_transparent  /tmp/screenshot.png "$tfo.png" & PIDpng=$!
+    /opt/mozjpeg/bin/cjpeg -quality $quality -dct float -quant-table 4 \
+                           -outfile "$tfo.jpg" /tmp/screenshot.png & PIDjpg=$!
+    wait $PIDjpg
+    wait $PIDpng
+    sizePNG=$(stat --printf="%s" "$tfo.png")
+    sizeJPG=$(stat --printf="%s" "$tfo.jpg")
+    if [[ $sizePNG < $sizeJPG ]]; then setEXT 1; rm "$tfo.jpg"
+    else setEXT 2; rm "$tfo.png"; fi
+    mv $tfo$ext $name;
+    rm /tmp/screenshot.png
 }
 
-# Stop ffmpeg from capturing
-function killanim {
-    kill -s TERM $(cat /tmp/ssffmpeg.pid)
-    rm /tmp/ssffmpeg.pid
-    sleep 0.25s
-    mv /tmp/screenshot.apng $name
+# Capture an animation with ffmpeg or stop it
+function capanim {
+    if [[ -f /tmp/ssffmpeg.pid ]]; then
+        setEXT 3
+        kill -s TERM $(cat /tmp/ssffmpeg.pid); rm /tmp/ssffmpeg.pid
+        mv /tmp/screenshot.apng $name
+        upload
+    else
+        read -r X Y W H < <(slop -c 1,0.2,1,0.8 -b 2 -f "%x %y %w %h"; echo "")
+        ffmpeg -r $Anim_FPS -f x11grab -s "$W"x"$H" -i "$DISPLAY".0+$X,$Y \
+               -pix_fmt rgb24 -plays 0 /tmp/screenshot.apng & \
+            echo $! >> /tmp/ssffmpeg.pid
+    fi
 }
 
 ## -------------------------------------------------------------------------- ##
@@ -182,11 +189,12 @@ if [[ $hflag -eq 1 ]]; then
     helpme
 elif [[ $set_uid -eq 1 ]]; then
     setuid
-elif [[ $kflag -eq 1 ]]; then
-    killanim
-    upload
 elif [[ $Animation -eq 1 ]]; then
     capanim
+elif [[ $oflag -eq 1 ]]; then
+    tkss
+    OPTIencode
+    upload
 else
     if [[ $Encoder == "png" ]]; then
         tkss
