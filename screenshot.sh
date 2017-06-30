@@ -160,7 +160,7 @@ function OPTIencode {
     wait $PIDpng
     sizePNG=$(stat --printf="%s" "$tfo.png")
     sizeJPG=$(stat --printf="%s" "$tfo.jpg")
-    if [[ $sizePNG < $sizeJPG ]]; then setEXT 1; rm "$tfo.jpg"
+    if [[ $sizePNG -lt $sizeJPG ]]; then setEXT 1; rm "$tfo.jpg"
     else setEXT 2; rm "$tfo.png"; fi
     mv $tfo$ext $name;
     rm /tmp/screenshot.png
