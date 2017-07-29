@@ -130,7 +130,7 @@ function upload {
 
 # Capture the screenshot as a PNG
 function tkss {
-    maim -s -b 2 -c 1,0.2,1,0.8 /tmp/screenshot.png
+    maim -m 1 -s -b 2 -c 1,0.2,1,0.8 /tmp/screenshot.png
     if [[ ! -f /tmp/screenshot.png ]]; then exit 1; fi
 }
 
