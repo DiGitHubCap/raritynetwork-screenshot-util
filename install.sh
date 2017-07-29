@@ -34,7 +34,7 @@ if [[ $yn == "y" ]] || [[ $yn == "Y" ]]; then
     chmod +x ./$name
     sudo mv ./$name /usr/bin/$name
 
-# Fake Progress Bar
+    # Fake Progress Bar
     tleng=$(($(tput cols) - 25))
     echo -en "\nInstalling...   ["
     i=1
