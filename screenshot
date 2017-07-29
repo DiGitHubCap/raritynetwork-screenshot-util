@@ -5,12 +5,12 @@ set -e
 ## -------------------------------- Variables ------------------------------- ##
 ## -------------------------------------------------------------------------- ##
 
-# Default encoder. (Set with installer script)
-Encoder=__ENCODER__
+# Default encoder.
+Encoder="${SCREENSHOT_ENCODER:-jpeg}"
 
 # Set the default frame rate at which to capture (Range: whatever your system
 # can handle, default = 16 because most systems suck).
-Anim_FPS="16"
+Anim_FPS="${SCREENSHOT_FPS:-16}"
 
 # Flag variable used to start video capture.
 Animation=0
@@ -34,11 +34,14 @@ oflag=0
 set_uid=0
 
 # Quality to use for JPEG encoding
-quality=95
+quality="${SCREENSHOT_QUALITY:-95}"
+
+# Previewer to use when previewing screenshots
+previewer="${SCREENSHOT_PREVIEWER:-xdg-open}"
 
 ## ---------------------------------- Flags --------------------------------- ##
 # Setting variables with flags
-while getopts "ahndcou:q:f:e:" flag; do
+while getopts "ahndcoup:q:f:e:" flag; do
     case "${flag}" in
         a) Animation=1 ;;
         h) hflag=1 ;;
@@ -48,6 +51,7 @@ while getopts "ahndcou:q:f:e:" flag; do
         o) oflag=1 ;;
         u) uid="${OPTARG}" set_uid=1 ;;
         q) quality="${OPTARG}" ;;
+        p) previewer="${OPTARG}" ;;
         f) Anim_FPS="${OPTARG}" ;;
         e) Encoder="${OPTARG}" ;;
     esac
@@ -55,10 +59,10 @@ done
 
 ## -------------------------- Pre-Function Setup  --------------------------- ##
 # Get UID from file and make the name
-if [[ ! -f ~/.config/__PROGNAME__/sc.uid ]]; then
+if [[ ! -f ~/.config/screenshot/sc.uid ]]; then
     echo "WARNING: UID is not set. Use -u to set UID."
     name="/tmp/0."$(date +%s)
-else name="/tmp/"$(cat ~/.config/__PROGNAME__/sc.uid)"."$(date +%s); fi
+else name="/tmp/"$(cat ~/.config/screenshot/sc.uid)"."$(date +%s); fi
 
 # Select which PNG compression to use
 if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
@@ -70,7 +74,7 @@ if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
 # Output help info
 function helpme {
     echo -e "\n    Rarity Network Screenshot Util v2.3.1\n
-Usage:             __PROGNAME__ [OPTIONS]\n
+Usage:             screenshot [OPTIONS]\n
 Description:       This is a command-line tool that takes a screenshot using
                    either PNG/APNG or JPG and uploads it to Utils.Rarity.Network
 Options:
@@ -85,17 +89,17 @@ Options:
   -a               Start and stop APNG capture
   -f 'fps'         Set the fps to capture APNGs at (Default: 16)
 Examples:
-  __PROGNAME__
-  __PROGNAME__ -n -e jpeg
-  __PROGNAME__ -od
-  __PROGNAME__ -a -f 20
+  screenshot
+  screenshot -n -e jpeg
+  screenshot -od
+  screenshot -a -f 20
 "
 }
 
 # Write the UID to file
 function setuid {
-    mkdir -p ~/.config/__PROGNAME__/
-    echo $uid > ~/.config/__PROGNAME__/sc.uid
+    mkdir -p ~/.config/screenshot/
+    echo $uid > ~/.config/screenshot/sc.uid
     echo "Successfully set UID to '"$uid"'"
 }
 
@@ -121,10 +125,7 @@ function upload {
     echo -n $url | xsel -ib
 
     # Preview Check
-    if [[ $nflag -eq 0 ]]; then $(__DEFAULTVIEWER__ $name); fi
-
-    # When done previewing delete files
-    rm $name
+    if [[ $nflag -eq 0 ]]; then $previewer $name; fi
 }
 
 # Capture the screenshot as a PNG
