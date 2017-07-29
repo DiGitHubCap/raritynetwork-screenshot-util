@@ -25,8 +25,6 @@ echo -e "Using:\n\n"$encoder"\n"
 read -p ":: Proceed with installation? [Y/n] " yn
 if [[ $yn == "y" ]] || [[ $yn == "Y" ]]; then
 
-    sed '2,${/#/d;/^$/d}' ./screenshot.sh > ./$name
-
     sed -i "s/__PROGNAME__/"$name"/g" ./$name
     sed -i "s/__DEFAULTVIEWER__/"$defviewer"/g" ./$name
     sed -i "s/__ENCODER__/"$encoder"/g" ./$name
