@@ -123,7 +123,7 @@ Examples:
 function setuid {
     mkdir -p $HOME/.config/screenshot/
     echo $uid > $HOME/.config/screenshot/sc.uid
-    echo "Successfully set UID to '"$uid"'"
+    echo "Successfully set UID to '$uid'"
 }
 
 # Set the extension variable and name
