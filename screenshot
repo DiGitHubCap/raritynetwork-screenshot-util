@@ -79,20 +79,35 @@ Description:       This is a command-line tool that takes a screenshot using
                    either PNG/APNG or JPG and uploads it to Utils.Rarity.Network
 Options:
   -h               Show this help message and exit
-  -e png|jpeg      Sets the encoder to be used (Default: $Encoder)
-  -u 'uid'         Sets the uid and exits
+  -e png|jpeg      Sets the encoder to be used (Default: jpeg)
+  -u <uid>         Sets the uid and exits
   -n               No previewing
   -d               Return direct link
   -c               Turns off PNG crushing
   -o               Turns on auto selecting the best encoder for smallest file
   -q 1-100         Quality parameter for JPEG encoding (Default: 95)
+  -p <previewer>   Image previewer to use (Default: xdg-open)
   -a               Start and stop APNG capture
-  -f 'fps'         Set the fps to capture APNGs at (Default: 16)
+  -f <fps>         Set the fps to capture APNGs at (Default: 16)
+Environment:
+  SCREENSHOT_ENCODER png|jpeg
+    Sets the encoder to be used (Default: jpeg)
+  SCREENSHOT_FPS <fps>
+    Set the fps to capture APNGs at (Default: 16)
+  SCREENSHOT_QUALITY 1-100
+    Quality parameter for JPEG encoding (Default: 95)
+  SCREENSHOT_PREVIEWER <previewer>
+    Image previewer to use (Default: xdg-open)
 Examples:
   screenshot
-  screenshot -n -e jpeg
+    Take a normal screenshot.
+  screenshot -n -e png
+    Take a PNG screenshot, but don't preview it.
   screenshot -od
+    Optimize the screenshot for the smallest file size and return a direct link
+    to the image.
   screenshot -a -f 20
+    Start recording an APNG at 20 fps. (Run \"screenshot -a\" again to stop.)
 "
 }
 
