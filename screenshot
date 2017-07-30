@@ -42,6 +42,9 @@ quality="${SCREENSHOT_QUALITY:-95}"
 # Previewer to use when previewing screenshots
 previewer="${SCREENSHOT_PREVIEWER:-xdg-open}"
 
+# Directory to store screenshots in
+dir="${SCREENSHOT_DIRECTORY:-$HOME/Pictures/Screenshots}"
+
 ## ---------------------------------- Flags --------------------------------- ##
 # Setting variables with flags
 while getopts "ahndcotup:q:f:e:" flag; do
@@ -62,11 +65,16 @@ while getopts "ahndcotup:q:f:e:" flag; do
 done
 
 ## -------------------------- Pre-Function Setup  --------------------------- ##
+# Ensure screenshot directory exists or can be created
+if [[ ! -d "$dir" ]]; then
+    mkdir -p "$dir"
+    if [[ $? -ne 0 ]]; then exit 1; fi
+fi
 # Get UID from file and make the name
 if [[ ! -f $HOME/.config/screenshot/sc.uid ]]; then
     echo "WARNING: UID is not set. Use -u to set UID."
-    name="/tmp/0."$(date +%s)
-else name="/tmp/"$(cat $HOME/.config/screenshot/sc.uid)"."$(date +%s); fi
+    name="$dir/0."$(date +%s)
+else name="$dir/"$(cat $HOME/.config/screenshot/sc.uid)"."$(date +%s); fi
 
 # Select which PNG compression to use
 if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
@@ -103,6 +111,8 @@ Environment:
     Quality parameter for JPEG encoding (Default: 95)
   SCREENSHOT_PREVIEWER <previewer>
     Image previewer to use (Default: xdg-open)
+  SCREENSHOT_DIRECTORY <directory>
+    Directory to store screenshots in (Default: $HOME/Pictures/Screenshots)
   SCREENSHOT_TORSOCKS_OPTS <options>
     Options to be passed to torsocks instead of the default
     \"-u screenshot -p screenshot\"
@@ -131,7 +141,7 @@ function setEXT {
     if [[ $1 -eq 1 ]]; then x=".png"
     elif [[ $1 -eq 2 ]]; then x=".jpg"
     elif [[ $1 -eq 3 ]]; then x=".apng"; fi
-    ext=$x; name=$name$ext;
+    ext=$x; name="$name$ext";
 }
 
 # Curl override for Tor support
@@ -157,7 +167,7 @@ function upload {
     echo -n $url | xsel -ib
 
     # Preview Check
-    if [[ $nflag -eq 0 ]]; then $previewer $name; fi
+    if [[ $nflag -eq 0 ]]; then $previewer "$name"; fi
 }
 
 # Capture the screenshot as a PNG
@@ -170,7 +180,7 @@ function tkss {
 function PNGenc {
     setEXT 1
     zopflipng -q -y --filters=$PNGfilter --iterations=0 --lossy_8bit \
-              --lossy_transparent  /tmp/screenshot.png $name
+              --lossy_transparent /tmp/screenshot.png "$name"
     rm /tmp/screenshot.png
 }
 
@@ -178,7 +188,7 @@ function PNGenc {
 function JPGenc {
     setEXT 2
     /opt/mozjpeg/bin/cjpeg -quality $quality -dct float -quant-table 4 \
-                           -outfile $name /tmp/screenshot.png
+                           -outfile "$name" /tmp/screenshot.png
     rm /tmp/screenshot.png
 }
 
@@ -186,7 +196,7 @@ function JPGenc {
 function OPTIencode {
     tfo=/tmp/out
     zopflipng -q -y --filters=$PNGfilter --iterations=0 --lossy_8bit \
-              --lossy_transparent  /tmp/screenshot.png "$tfo.png" & PIDpng=$!
+              --lossy_transparent /tmp/screenshot.png "$tfo.png" & PIDpng=$!
     /opt/mozjpeg/bin/cjpeg -quality $quality -dct float -quant-table 4 \
                            -outfile "$tfo.jpg" /tmp/screenshot.png & PIDjpg=$!
     wait $PIDjpg
@@ -195,7 +205,7 @@ function OPTIencode {
     sizeJPG=$(stat --printf="%s" "$tfo.jpg")
     if [[ $sizePNG -lt $sizeJPG ]]; then setEXT 1; rm "$tfo.jpg"
     else setEXT 2; rm "$tfo.png"; fi
-    mv $tfo$ext $name;
+    mv $tfo$ext "$name";
     rm /tmp/screenshot.png
 }
 
@@ -204,7 +214,7 @@ function capanim {
     if [[ -f /tmp/ssffmpeg.pid ]]; then
         setEXT 3
         kill -s TERM $(cat /tmp/ssffmpeg.pid); rm /tmp/ssffmpeg.pid
-        mv /tmp/screenshot.apng $name
+        mv /tmp/screenshot.apng "$name"
         upload
     else
         read -r X Y W H < <(slop -c 1,0.2,1,0.8 -b 2 -f "%x %y %w %h"; echo "")
