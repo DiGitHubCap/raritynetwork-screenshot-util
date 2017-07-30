@@ -1,0 +1,10 @@
+### Emacs ###
+*~
+\#*\#
+.\#*
+
+### Arch Linux ###
+/*.pkg.*
+/.SRCINFO
+/pkg/
+/src/
