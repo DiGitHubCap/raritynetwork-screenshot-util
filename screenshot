@@ -30,6 +30,9 @@ cflag=1
 # Flag variable used to toggle optimal mode.
 oflag=0
 
+# Flag variable used to enable uploading through Tor
+tflag=0
+
 # Flag variable used to trigger uid input.
 set_uid=0
 
@@ -41,7 +44,7 @@ previewer="${SCREENSHOT_PREVIEWER:-xdg-open}"
 
 ## ---------------------------------- Flags --------------------------------- ##
 # Setting variables with flags
-while getopts "ahndcoup:q:f:e:" flag; do
+while getopts "ahndcotup:q:f:e:" flag; do
     case "${flag}" in
         a) Animation=1 ;;
         h) hflag=1 ;;
@@ -49,6 +52,7 @@ while getopts "ahndcoup:q:f:e:" flag; do
         d) dflag=1 ;;
         c) cflag=0 ;;
         o) oflag=1 ;;
+        t) tflag=1 ;;
         u) uid="${OPTARG}" set_uid=1 ;;
         q) quality="${OPTARG}" ;;
         p) previewer="${OPTARG}" ;;
@@ -85,6 +89,7 @@ Options:
   -d               Return direct link
   -c               Turns off PNG crushing
   -o               Turns on auto selecting the best encoder for smallest file
+  -t               Upload screenshots through Tor (requires torsocks)
   -q 1-100         Quality parameter for JPEG encoding (Default: 95)
   -p <previewer>   Image previewer to use (Default: xdg-open)
   -a               Start and stop APNG capture
@@ -98,6 +103,9 @@ Environment:
     Quality parameter for JPEG encoding (Default: 95)
   SCREENSHOT_PREVIEWER <previewer>
     Image previewer to use (Default: xdg-open)
+  SCREENSHOT_TORSOCKS_OPTS <options>
+    Options to be passed to torsocks instead of the default
+    \"-u screenshot -p screenshot\"
 Examples:
   screenshot
     Take a normal screenshot.
@@ -124,6 +132,15 @@ function setEXT {
     elif [[ $1 -eq 2 ]]; then x=".jpg"
     elif [[ $1 -eq 3 ]]; then x=".apng"; fi
     ext=$x; name=$name$ext;
+}
+
+# Curl override for Tor support
+function curl {
+  if [[ $tflag -eq 1 ]]; then
+      torsocks ${SCREENSHOT_TORSOCKS_OPTS:--u screenshot -p screenshot} curl "$@"
+  else
+      command curl "$@"
+  fi
 }
 
 # Upload the final image to Rarity Network and preview it
