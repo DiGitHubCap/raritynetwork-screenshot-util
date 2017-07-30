@@ -85,7 +85,7 @@ if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
 
 # Output help info
 function helpme {
-    echo -e "\n    Rarity Network Screenshot Util v2.3.1\n
+    echo -e "\n    Rarity Network Screenshot Util v3.0\n
 Usage:             screenshot [OPTIONS]\n
 Description:       This is a command-line tool that takes a screenshot using
                    either PNG/APNG or JPG and uploads it to Utils.Rarity.Network
