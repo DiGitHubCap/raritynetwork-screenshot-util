@@ -63,10 +63,10 @@ done
 
 ## -------------------------- Pre-Function Setup  --------------------------- ##
 # Get UID from file and make the name
-if [[ ! -f ~/.config/screenshot/sc.uid ]]; then
+if [[ ! -f $HOME/.config/screenshot/sc.uid ]]; then
     echo "WARNING: UID is not set. Use -u to set UID."
     name="/tmp/0."$(date +%s)
-else name="/tmp/"$(cat ~/.config/screenshot/sc.uid)"."$(date +%s); fi
+else name="/tmp/"$(cat $HOME/.config/screenshot/sc.uid)"."$(date +%s); fi
 
 # Select which PNG compression to use
 if [[ $cflag -eq 1 ]]; then PNGfilter=0e; else PNGfilter=12; fi
@@ -121,8 +121,8 @@ Examples:
 
 # Write the UID to file
 function setuid {
-    mkdir -p ~/.config/screenshot/
-    echo $uid > ~/.config/screenshot/sc.uid
+    mkdir -p $HOME/.config/screenshot/
+    echo $uid > $HOME/.config/screenshot/sc.uid
     echo "Successfully set UID to '"$uid"'"
 }
 
